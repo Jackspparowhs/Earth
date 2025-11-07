@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PirateRuler Space Explorer — 3D Solar System</title>
+<link rel="icon" href="https://pirateruler.com/favicon.ico">
+<style>
+  html, body {
+    margin: 0; padding: 0; overflow: hidden;
+    height: 100%; width: 100%;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: radial-gradient(circle at center, #020611 0%, #000 100%);
+    color: #fff;
+  }
+  #infoPanel {
+    position: absolute;
+    top: 20px; left: 20px;
+    background: rgba(10,20,40,0.6);
+    padding: 18px 24px;
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    max-width: 320px;
+    font-size: 14px;
+    line-height: 1.6;
+    display: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  }
+  #infoPanel h2 {
+    margin: 0 0 6px 0;
+    font-size: 18px;
+    color: #6b9dff;
+  }
+  #footer {
+    position: absolute;
+    bottom: 20px; width: 100%;
+    text-align: center;
+  }
+  .visit {
+    padding: 12px 20px;
+    border-radius: 999px;
+    display: inline-block;
+    background: linear-gradient(90deg,#ff7aa2 0%, #6b7dff 100%);
+    color: white; font-weight: 800; text-decoration: none;
+    box-shadow: 0 0 20px rgba(11,107,255,0.3);
+  }
+</style>
+</head>
+<body>
+<div id="infoPanel"></div>
+<div id="footer">
+  <a class="visit" href="https://pirateruler.com" target="_blank">Visit PirateRuler.com</a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+let scene, camera, renderer, controls;
+let planets = [], planetData = {};
+let raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
+let infoPanel = document.getElementById('infoPanel');
+
+function init() {
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 2000);
+  camera.position.set(0, 100, 400);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  document.body.appendChild(renderer.domElement);
+
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+
+  // lights
+  const ambient = new THREE.AmbientLight(0x404040, 2);
+  const sunLight = new THREE.PointLight(0xffffff, 2, 0);
+  sunLight.position.set(0,0,0);
+  scene.add(ambient, sunLight);
+
+  // background stars
+  const starGeo = new THREE.BufferGeometry();
+  const starCount = 2000;
+  const starPos = new Float32Array(starCount * 3);
+  for(let i=0;i<starCount;i++){
+    starPos[i*3] = (Math.random()-0.5)*4000;
+    starPos[i*3+1] = (Math.random()-0.5)*4000;
+    starPos[i*3+2] = (Math.random()-0.5)*4000;
+  }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 2 });
+  const stars = new THREE.Points(starGeo, starMat);
+  scene.add(stars);
+    // === SUN ===
+  const sunTex = new THREE.TextureLoader().load('https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/sun.jpg');
+  const sunMat = new THREE.MeshBasicMaterial({ map: sunTex });
+  const sun = new THREE.Mesh(new THREE.SphereGeometry(30,64,64), sunMat);
+  scene.add(sun);
+
+  // Planet Data
+  planetData = {
+    Mercury: { size: 3, dist: 50, speed: 0.04, rot: 0.004, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/mercury.jpg', info: 'Mercury — closest planet to the Sun.' },
+    Venus:   { size: 5, dist: 80, speed: 0.015, rot: 0.002, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/venus.jpg', info: 'Venus — hottest planet with dense atmosphere.' },
+    Earth:   { size: 5.5, dist: 110, speed: 0.01, rot: 0.02, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/earth.jpg', info: 'Earth — our home, the blue planet.' },
+    Mars:    { size: 4, dist: 150, speed: 0.008, rot: 0.018, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/mars.jpg', info: 'Mars — the red planet with rocky deserts.' },
+    Jupiter: { size: 12, dist: 210, speed: 0.005, rot: 0.05, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/jupiter.jpg', info: 'Jupiter — largest planet with massive storms.' },
+    Saturn:  { size: 10, dist: 280, speed: 0.004, rot: 0.04, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/saturn.jpg', info: 'Saturn — famous for its beautiful rings.' },
+    Uranus:  { size: 8, dist: 350, speed: 0.003, rot: 0.03, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/uranus.jpg', info: 'Uranus — rotates on its side, icy and pale.' },
+    Neptune: { size: 8, dist: 420, speed: 0.002, rot: 0.028, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/neptune.jpg', info: 'Neptune — farthest planet, deep blue and cold.' },
+    Pluto:   { size: 2.5, dist: 480, speed: 0.0015, rot: 0.01, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/pluto.jpg', info: 'Pluto — a dwarf planet beyond Neptune.' }
+  };
+
+  const loader = new THREE.TextureLoader();
+  Object.keys(planetData).forEach(name=>{
+    const d = planetData[name];
+    const geo = new THREE.SphereGeometry(d.size, 48, 48);
+    const mat = new THREE.MeshStandardMaterial({ map: loader.load(d.tex) });
+    const planet = new THREE.Mesh(geo, mat);
+    planet.position.x = d.dist;
+    planet.userData = { name, ...d, angle: Math.random()*Math.PI*2 };
+    planets.push(planet);
+    scene.add(planet);
+
+    // optional ring for Saturn
+    if(name === 'Saturn'){
+      const ringGeo = new THREE.RingGeometry(d.size*1.4, d.size*2.2, 64);
+      const ringMat = new THREE.MeshBasicMaterial({
+        map: loader.load('https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/saturn_ring.png'),
+        side: THREE.DoubleSide, transparent: true
+      });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = Math.PI/2;
+      planet.add(ring);
+    }
+
+    // Earth’s Moon
+    if(name === 'Earth'){
+      const moonGeo = new THREE.SphereGeometry(1.2,32,32);
+      const moonMat = new THREE.MeshStandardMaterial({ map: loader.load('https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/moon.jpg')});
+      const moon = new THREE.Mesh(moonGeo, moonMat);
+      moon.userData = { angle: 0 };
+      planet.add(moon);
+      planet.userData.moon = moon;
+    }
+  });
+
+  window.addEventListener('resize', ()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  window.addEventListener('click', onClick);
+}
+
+function onClick(e){
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(planets);
+  if(hits.length > 0){
+    const obj = hits[0].object;
+    const d = obj.userData;
+    infoPanel.innerHTML = `<h2>${d.name}</h2>${d.info}`;
+    infoPanel.style.display = 'block';
+  } else infoPanel.style.display = 'none';
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  planets.forEach(p=>{
+    const d = p.userData;
+    d.angle += d.speed;
+    p.position.x = Math.cos(d.angle) * d.dist;
+    p.position.z = Math.sin(d.angle) * d.dist;
+    p.rotation.y += d.rot;
+    if(d.moon){
+      d.moon.userData.angle += 0.04;
+      d.moon.position.x = Math.cos(d.moon.userData.angle)*10;
+      d.moon.position.z = Math.sin(d.moon.userData.angle)*10;
+    }
+  });
+  controls.update();
+  renderer.render(scene, camera);
+}
+init();
+animate();
+  // === METEOR BELT ===
+const meteorGeo = new THREE.SphereGeometry(0.5,8,8);
+const meteorMat = new THREE.MeshStandardMaterial({ color:0x999999, roughness:1 });
+const meteorCount = 500;
+for(let i=0;i<meteorCount;i++){
+  const meteor = new THREE.Mesh(meteorGeo, meteorMat);
+  const angle = Math.random()*Math.PI*2;
+  const dist = 240 + Math.random()*60;
+  meteor.position.set(Math.cos(angle)*dist, (Math.random()-0.5)*10, Math.sin(angle)*dist);
+  scene.add(meteor);
+}
+
+// === LIGHT GLOW EFFECT ===
+const glowGeo = new THREE.SphereGeometry(36,64,64);
+const glowMat = new THREE.MeshBasicMaterial({
+  color:0xffcc66, transparent:true, opacity:0.25
+});
+const sunGlow = new THREE.Mesh(glowGeo, glowMat);
+scene.add(sunGlow);
+
+// === CAMERA AUTO-ROTATION (CINEMATIC) ===
+let cinematic = true;
+document.addEventListener('keydown', e=>{
+  if(e.key.toLowerCase()==='c'){ cinematic=!cinematic; }
+});
+let camAngle=0;
+
+// === SIDEBAR HINT + FOOTER EFFECT ===
+const hint=document.createElement('div');
+hint.innerHTML=`<div style="position:absolute;right:20px;top:20px;
+background:rgba(255,255,255,0.08);padding:12px 18px;border-radius:10px;
+font-size:13px;line-height:1.6;backdrop-filter:blur(6px)">
+<b>Controls:</b><br>
+Drag = Orbit<br>
+Scroll = Zoom<br>
+Click = Info<br>
+Press "C" = Cinematic View</div>`;
+document.body.appendChild(hint);
+
+// === ADD STAR TWINKLE ANIMATION ===
+let starTime=0;
+function twinkle(){
+  starTime+=0.01;
+  const positions = stars.geometry.attributes.position;
+  for(let i=0;i<positions.count;i++){
+    const amp=Math.sin(starTime+i*0.05)*0.5+0.5;
+    starMat.size=1.5+amp*0.8;
+  }
+}
+
+// === ENHANCE ANIMATE LOOP ===
+const oldAnimate = animate;
+animate = function(){
+  requestAnimationFrame(animate);
+  planets.forEach(p=>{
+    const d = p.userData;
+    d.angle += d.speed;
+    p.position.x = Math.cos(d.angle)*d.dist;
+    p.position.z = Math.sin(d.angle)*d.dist;
+    p.rotation.y += d.rot;
+    if(d.moon){
+      d.moon.userData.angle += 0.04;
+      d.moon.position.x = Math.cos(d.moon.userData.angle)*10;
+      d.moon.position.z = Math.sin(d.moon.userData.angle)*10;
+    }
+  });
+  if(cinematic){
+    camAngle+=0.001;
+    camera.position.x=Math.cos(camAngle)*500;
+    camera.position.z=Math.sin(camAngle)*500;
+    camera.lookAt(0,0,0);
+  }
+  twinkle();
+  controls.update();
+  renderer.render(scene,camera);
+};
+animate();
+</script>
+</body>
+</html>
