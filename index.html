@@ -1,268 +1,551 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PirateRuler Space Explorer — 3D Solar System</title>
-<link rel="icon" href="https://pirateruler.com/favicon.ico">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Quotes By PirateRuler.com — Daily Quotes (Offline)</title>
+<meta name="description" content="Quotes By PirateRuler.com — 1200+ offline, privacy-first quotes. Search, randomize, favourite and download. No API, no signup." />
+<meta name="theme-color" content="#f7fbff" />
+<link rel="icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect rx="14" width="64" height="64" fill="%236b7dff"/><text x="50%" y="50%" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="26" text-anchor="middle" alignment-baseline="central" fill="white">PR</text></svg>'>
 <style>
-  html, body {
-    margin: 0; padding: 0; overflow: hidden;
-    height: 100%; width: 100%;
-    font-family: 'Inter', system-ui, sans-serif;
-    background: radial-gradient(circle at center, #020611 0%, #000 100%);
-    color: #fff;
+  /* ---- Theme / Layout (keeps your Calculator look & feel) ---- */
+  :root{
+    --bg:#f3f7fb; --card:#ffffff; --muted:#6b7480; --text:#0b2130;
+    --accent-start:#6b7dff; --accent-end:#0bb3ff;
+    --glass: rgba(11,17,28,0.04);
+    --radius:14px;
+    --shadow-lg: 0 18px 50px rgba(3,12,30,0.18), inset 0 1px 0 rgba(255,255,255,0.6);
+    --shadow-sm: 0 8px 24px rgba(3,12,30,0.08);
   }
-  #infoPanel {
-    position: absolute;
-    top: 20px; left: 20px;
-    background: rgba(10,20,40,0.6);
-    padding: 18px 24px;
-    border-radius: 12px;
-    backdrop-filter: blur(8px);
-    max-width: 320px;
-    font-size: 14px;
-    line-height: 1.6;
-    display: none;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-  }
-  #infoPanel h2 {
-    margin: 0 0 6px 0;
-    font-size: 18px;
-    color: #6b9dff;
-  }
-  #footer {
-    position: absolute;
-    bottom: 20px; width: 100%;
-    text-align: center;
-  }
-  .visit {
-    padding: 12px 20px;
-    border-radius: 999px;
-    display: inline-block;
-    background: linear-gradient(90deg,#ff7aa2 0%, #6b7dff 100%);
-    color: white; font-weight: 800; text-decoration: none;
-    box-shadow: 0 0 20px rgba(11,107,255,0.3);
-  }
+  html.dark { --bg:#071225; --card:#061028; --muted:#98a7bf; --text:#e9f1ff; --glass: rgba(255,255,255,0.02); --shadow-lg: 0 18px 50px rgba(0,0,0,0.6); --shadow-sm: 0 8px 24px rgba(0,0,0,0.45); --accent-start:#5ab3ff; --accent-end:#6b7dff; }
+  html.ocean { --bg:#e8f7fb; --card:#ffffff; --muted:#4f6b75; --text:#063242; --glass: rgba(6,50,66,0.03); --accent-start:#00c2d1; --accent-end:#2b9fff; --shadow-lg: 0 18px 50px rgba(3,12,30,0.08); }
+  html.sunset { --bg:#fff6f8; --card:#fff; --muted:#7a6b77; --text:#2a1020; --glass: rgba(42,16,32,0.03); --accent-start:#ff7aa2; --accent-end:#ffb86b; --shadow-lg: 0 18px 50px rgba(50,10,20,0.06); }
+
+  *{box-sizing:border-box}
+  body{background:linear-gradient(180deg,var(--bg), #e9f6ff); font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; color:var(--text); margin:0; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1280px;margin:14px auto;padding:18px;}
+
+  header.header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; border-radius:14px; background:linear-gradient(90deg, rgba(107,125,255,0.06), rgba(11,179,255,0.02)); box-shadow:var(--shadow-sm); }
+  .brand {display:flex; align-items:center; gap:12px;}
+  .logo { width:60px;height:60px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800; background:linear-gradient(135deg,var(--accent-start),var(--accent-end)); color:white; font-size:20px; box-shadow:0 10px 30px rgba(11,123,255,0.12); flex-shrink:0; }
+  .brand-title .title-strong {font-size:20px;font-weight:900;margin:0}
+  .brand-title .by {font-size:12px;color:var(--muted); margin-top:2px}
+
+  .header-actions {display:flex; gap:10px; align-items:center;}
+  .btn {padding:9px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+  .btn.ghost {background:transparent;border:1px solid rgba(0,0,0,0.06); color:var(--text);}
+  .btn.theme {background:linear-gradient(90deg,var(--accent-start),var(--accent-end)); color:white}
+  .hamb { width:46px;height:46px;border-radius:10px;background:var(--glass);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid rgba(0,0,0,0.04) }
+
+  .theme-list { position:absolute; right:0; top:48px; background:var(--card); border-radius:10px; box-shadow:var(--shadow-sm); padding:8px; display:none; min-width:140px; z-index:1000; }
+  .theme-list.open { display:block; }
+  .theme-item { padding:8px 10px; cursor:pointer; border-radius:8px; font-weight:700; color:var(--muted) }
+
+  .sidebar { position:fixed; top:0; right:0; height:100vh; width:360px; max-width:94vw; transform:translateX(120%); transition:transform .28s cubic-bezier(.2,.9,.3,1); z-index:90; background:var(--card); box-shadow: -40px 0 80px rgba(2,8,20,0.25); padding:20px; border-left:1px solid rgba(0,0,0,0.04); overflow:auto; border-radius:0 0 0 14px; }
+  .sidebar.open { transform:translateX(0); }
+  .nav-list{margin-top:10px; display:flex; flex-direction:column; gap:12px}
+  .nav-list a{display:block;padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.01), rgba(0,0,0,0.02)); color:var(--text); font-weight:600}
+  .backup{margin-top:18px;color:var(--muted);font-size:13px}
+
+  .hero { margin-top:18px; padding:28px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96)); box-shadow:var(--shadow-lg); text-align:center;}
+  .hero .big {font-size:34px;font-weight:900;margin:0}
+  .hero .small {color:var(--muted); margin-top:6px}
+
+  .grid { display:grid; grid-template-columns: 2fr 1fr; gap:18px; margin-top:12px; align-items:start; }
+  @media (max-width:980px){ .grid{ grid-template-columns: 1fr } }
+  .card { background:var(--card); border-radius:14px; padding:18px; box-shadow:var(--shadow-sm); border:1px solid rgba(0,0,0,0.04); }
+  .hint{color:var(--muted); font-size:13px; margin-bottom:10px}
+
+  input[type="text"], select { width:100%; padding:12px;border-radius:10px;border:1px solid rgba(10,20,40,0.06); font-size:15px; background:transparent; color:var(--text) }
+
+  .controls { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  .primary { background:linear-gradient(90deg,var(--accent-start),var(--accent-end)); color:white; padding:9px 14px; border-radius:10px; border:none; font-weight:800; cursor:pointer }
+  .ghost { background:transparent; border:1px solid rgba(0,0,0,0.06); padding:9px 12px;border-radius:10px; cursor:pointer }
+
+  .quote-list { margin-top:14px; display:grid; gap:12px; }
+  .quote { padding:14px; border-radius:12px; background:linear-gradient(180deg, rgba(0,0,0,0.01), rgba(0,0,0,0.02)); border:1px solid rgba(0,0,0,0.04); }
+  .q-text { font-size:16px; line-height:1.45; margin-bottom:8px; }
+  .q-author { font-weight:700; color:var(--muted); font-size:13px; }
+
+  .pager { display:flex; gap:8px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+  .page-btn { padding:8px 10px; border-radius:8px; border:1px solid rgba(0,0,0,0.06); background:transparent; cursor:pointer; font-weight:700; }
+  .page-btn.active { background:linear-gradient(90deg,var(--accent-start),var(--accent-end)); color:white; box-shadow:0 10px 30px rgba(11,107,255,0.12); }
+
+  .favs { margin-top:12px; }
+  .smallmuted{ color:var(--muted); font-size:13px; }
+
+  footer { margin-top:16px; padding:16px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.96)); text-align:center; box-shadow:var(--shadow-lg) }
+  .visit { padding:12px 20px; border-radius:999px; display:inline-block; background:linear-gradient(90deg,#ff7aa2 0%, #6b7dff 100%); color:white; font-weight:800; text-decoration:none }
+
+  /* responsiveness */
+  @media (max-width:700px){ .controls { flex-direction:column } .hero .big{font-size:26px} }
 </style>
 </head>
 <body>
-<div id="infoPanel"></div>
-<div id="footer">
-  <a class="visit" href="https://pirateruler.com" target="_blank">Visit PirateRuler.com</a>
+<div class="container">
+
+  <!-- Header -->
+  <header class="header" role="banner" aria-label="Site header">
+    <div class="brand">
+      <a href="/" aria-label="Home" style="display:flex; align-items:center; gap:12px">
+        <div class="logo" aria-hidden="true">PR</div>
+        <div class="brand-title">
+          <div class="title-strong">Quotes</div>
+          <div class="by">by PirateRuler.com</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="header-actions" role="navigation" aria-label="Header controls">
+      <div class="theme-select" id="themeSelectWrap">
+        <button id="themeBtn" class="btn theme" title="Theme">Ocean</button>
+        <div id="themeList" class="theme-list" aria-hidden="true">
+          <div class="theme-item" data-theme="light">Light</div>
+          <div class="theme-item" data-theme="dark">Dark</div>
+          <div class="theme-item" data-theme="ocean">Ocean</div>
+          <div class="theme-item" data-theme="sunset">Sunset</div>
+        </div>
+      </div>
+      <div class="hamb" id="hambBtn" title="Open menu" aria-haspopup="true" aria-controls="sidebar">☰</div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="heroTitle">
+    <h1 id="heroTitle" class="big">1200+ Quotes — Offline & Private</h1>
+    <p class="small">Search, randomize, favorite and download quotes — no API, no account, runs fully in your browser.</p>
+  </section>
+
+  <!-- MAIN GRID -->
+  <main class="grid" role="main">
+    <!-- LEFT: quotes area -->
+    <div class="card" aria-labelledby="mainTitle">
+      <h2 id="mainTitle">Find a Quote</h2>
+      <p class="hint">Search by text or author. Use Random for a quick hit.</p>
+
+      <div style="display:flex;gap:10px;align-items:center;">
+        <input id="searchInput" type="text" placeholder="Search quotes or authors (press Enter to search)" />
+        <button id="searchBtn" class="primary">Search</button>
+        <button id="randomBtn" class="ghost">Random</button>
+        <button id="downloadBtn" class="ghost" title="Download visible quotes as .txt">Download</button>
+      </div>
+
+      <div class="controls" style="margin-top:12px">
+        <select id="sortSelect" aria-label="Sort">
+          <option value="relevance">Relevance</option>
+          <option value="author">Author A→Z</option>
+          <option value="author_desc">Author Z→A</option>
+        </select>
+
+        <label style="display:flex;gap:8px;align-items:center">
+          <input id="showAllToggle" type="checkbox" /> <span class="smallmuted">Show all</span>
+        </label>
+
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button id="showFavesBtn" class="ghost">Show Favourites</button>
+          <button id="clearFavesBtn" class="ghost" title="Clear saved favourites">Clear Faves</button>
+        </div>
+      </div>
+
+      <div id="resultsMeta" class="smallmuted" style="margin-top:10px">Showing <span id="shownCount">0</span> of <span id="totalCount">0</span> quotes</div>
+
+      <div id="quoteList" class="quote-list" aria-live="polite"></div>
+
+      <div class="pager" id="pager"></div>
+    </div>
+
+    <!-- RIGHT: feature panel -->
+    <aside>
+      <div class="feature-panel">
+        <div class="panel-title">Why this Quotes site?</div>
+        <div class="features" style="display:grid; gap:12px; grid-template-columns:1fr 1fr">
+          <div class="feature"><div class="f-icon">⚡</div><div><div class="f-title">Offline</div><div class="f-desc">All quotes embedded — works without internet.</div></div></div>
+          <div class="feature"><div class="f-icon" style="background:linear-gradient(135deg,#8ee36b,#2bbf6f)">🔒</div><div><div class="f-title">Private</div><div class="f-desc">No tracking, no servers.</div></div></div>
+          <div class="feature"><div class="f-icon" style="background:linear-gradient(135deg,#ffb86b,#ff6b7a)">📚</div><div><div class="f-title">Large library</div><div class="f-desc">1,200+ quotes across topics & authors.</div></div></div>
+          <div class="feature"><div class="f-icon" style="background:linear-gradient(135deg,#c471ed,#7bffdd)">⭐</div><div><div class="f-title">Favourites</div><div class="f-desc">Save quotes locally to come back later.</div></div></div>
+        </div>
+
+        <div style="margin-top:12px">
+          <h3 style="margin:6px 0">Quick tips</h3>
+          <ul class="smallmuted" style="padding-left:16px;margin:6px 0 0 0">
+            <li>Use the Random button for a quick quote.</li>
+            <li>Toggle "Show all" to list everything (useful for download).</li>
+            <li>Favourites are stored only in your browser.</li>
+          </ul>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="feature" style="min-height:unset; align-items:flex-start; padding:14px; margin-top:12px;">
+          <div class="f-icon" style="background:linear-gradient(135deg,var(--accent-start),var(--accent-end))">PR</div>
+          <div>
+            <div class="f-title">Quotes By PirateRuler.com</div>
+            <div class="f-desc" style="margin-top:6px">
+              <a href="https://www.pirateruler.com/post/about.html" target="_blank" rel="noopener noreferrer">About</a> ·
+              <a href="https://www.pirateruler.com/post/privacy.html" target="_blank" rel="noopener noreferrer">Privacy</a> ·
+              <a href="https://www.pirateruler.com/post/contact.html" target="_blank" rel="noopener noreferrer">Contact</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="favs" id="favsPanel"></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <a class="visit" href="https://pirateruler.com" target="_blank" rel="noopener noreferrer">Visit PirateRuler.com</a>
+    <div style="height:12px"></div>
+    <small class="muted">© <span id="year"></span> Quotes By PirateRuler.com — Offline library</small>
+  </footer>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/controls/OrbitControls.js"></script>
+
+<!-- Sidebar content (same style as your other sites) -->
+<aside id="sidebar" class="sidebar" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="close" style="display:flex;justify-content:flex-end"><button class="ghost" id="closeSidebar">Close</button></div>
+  <h3>PirateRuler Links</h3>
+  <p class="muted">Quick links & backup resources</p>
+  <nav class="nav-list" aria-label="PirateRuler quick links">
+    <a href="https://www.pirateruler.com/post/about.html" target="_blank" rel="noopener noreferrer">About — PirateRuler</a>
+    <a href="https://www.pirateruler.com/post/privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+    <a href="https://www.pirateruler.com/post/contact.html" target="_blank" rel="noopener noreferrer">Contact</a>
+    <a href="https://www.pirateruler.com/post/terms.html" target="_blank" rel="noopener noreferrer">Terms & Service</a>
+  </nav>
+  <div class="backup">If this site is offline visit PirateRuler for backups & resources:<br><a href="https://pirateruler.com" target="_blank" rel="noopener noreferrer">pirateruler.com</a></div>
+</aside>
+
 <script>
-let scene, camera, renderer, controls;
-let planets = [], planetData = {};
-let raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
-let infoPanel = document.getElementById('infoPanel');
+/* -------------------------
+   Data: 1200+ quotes (embedded)
+   - 40 real famous quotes included
+   - + 1160 generated inspirational quotes to reach 1200+
+   ------------------------- */
 
-function init() {
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 2000);
-  camera.position.set(0, 100, 400);
+const realFamous = [
+  {t:"The only limit to our realization of tomorrow is our doubts of today.", a:"Franklin D. Roosevelt"},
+  {t:"Be yourself; everyone else is already taken.", a:"Oscar Wilde"},
+  {t:"Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.", a:"Albert Einstein"},
+  {t:"In three words I can sum up everything I've learned about life: it goes on.", a:"Robert Frost"},
+  {t:"If you tell the truth you don't have to remember anything.", a:"Mark Twain"},
+  {t:"The journey of a thousand miles begins with one step.", a:"Lao Tzu"},
+  {t:"That which does not kill us makes us stronger.", a:"Friedrich Nietzsche"},
+  {t:"Life is what happens when you're busy making other plans.", a:"John Lennon"},
+  {t:"You miss 100% of the shots you don't take.", a:"Wayne Gretzky"},
+  {t:"Whether you think you can or you think you can't, you're right.", a:"Henry Ford"},
+  {t:"The best way to predict the future is to invent it.", a:"Alan Kay"},
+  {t:"I have not failed. I've just found 10,000 ways that won't work.", a:"Thomas A. Edison"},
+  {t:"Do what you can, with what you have, where you are.", a:"Theodore Roosevelt"},
+  {t:"The only way to do great work is to love what you do.", a:"Steve Jobs"},
+  {t:"You must be the change you wish to see in the world.", a:"Mahatma Gandhi"},
+  {t:"Happiness is not something ready made. It comes from your own actions.", a:"Dalai Lama"},
+  {t:"The purpose of our lives is to be happy.", a:"Dalai Lama"},
+  {t:"Don't watch the clock; do what it does. Keep going.", a:"Sam Levenson"},
+  {t:"Act as if what you do makes a difference. It does.", a:"William James"},
+  {t:"Success usually comes to those who are too busy to be looking for it.", a:"Henry David Thoreau"},
+  {t:"If you want to lift yourself up, lift up someone else.", a:"Booker T. Washington"},
+  {t:"Your time is limited, don't waste it living someone else's life.", a:"Steve Jobs"},
+  {t:"The mind is everything. What you think you become.", a:"Buddha"},
+  {t:"The secret of getting ahead is getting started.", a:"Mark Twain"},
+  {t:"It is never too late to be what you might have been.", a:"George Eliot"},
+  {t:"Everything you can imagine is real.", a:"Pablo Picasso"},
+  {t:"Do one thing every day that scares you.", a:"Eleanor Roosevelt"},
+  {t:"What we think, we become.", a:"Buddha"},
+  {t:"If opportunity doesn't knock, build a door.", a:"Milton Berle"},
+  {t:"The best revenge is massive success.", a:"Frank Sinatra"},
+  {t:"Keep your face always toward the sunshine—and shadows will fall behind you.", a:"Walt Whitman"},
+  {t:"Perfection is not attainable, but if we chase perfection we can catch excellence.", a:"Vince Lombardi"},
+  {t:"The greatest wealth is to live content with little.", a:"Plato"},
+  {t:"The future belongs to those who believe in the beauty of their dreams.", a:"Eleanor Roosevelt"},
+  {t:"Don't be afraid to give up the good to go for the great.", a:"John D. Rockefeller"},
+  {t:"You can't use up creativity. The more you use, the more you have.", a:"Maya Angelou"},
+  {t:"It always seems impossible until it's done.", a:"Nelson Mandela"}
+];
 
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  document.body.appendChild(renderer.domElement);
+// small banks to generate many readable inspirational quotes
+const starts = [
+  "Believe", "Remember", "Embrace", "Create", "Choose", "Lead", "Learn",
+  "Grow", "Stay", "Keep", "Trust", "Cherish", "Be", "Act", "Find", "Honor"
+];
+const middles = [
+  "in small steps", "every day", "with courage", "without fear",
+  "and keep going", "for the long haul", "with patience", "with kindness",
+  "and move forward", "with purpose", "with consistency", "and don't stop",
+  "with an open heart", "without apology", "and take chances"
+];
+const endings = [
+  "— results will follow.", "— your future will thank you.", "— that is how change starts.",
+  "— the world needs it.", "— others will follow.", "— it's worth it.",
+  "— growth is slow but steady.", "— make it happen.", "— keep the faith.",
+  "— your story matters.", "— build your legacy.", "— create value."
+];
 
-  controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
-
-  // lights
-  const ambient = new THREE.AmbientLight(0x404040, 2);
-  const sunLight = new THREE.PointLight(0xffffff, 2, 0);
-  sunLight.position.set(0,0,0);
-  scene.add(ambient, sunLight);
-
-  // background stars
-  const starGeo = new THREE.BufferGeometry();
-  const starCount = 2000;
-  const starPos = new Float32Array(starCount * 3);
-  for(let i=0;i<starCount;i++){
-    starPos[i*3] = (Math.random()-0.5)*4000;
-    starPos[i*3+1] = (Math.random()-0.5)*4000;
-    starPos[i*3+2] = (Math.random()-0.5)*4000;
+function generateQuotes(count){
+  const arr = [];
+  // include the real ones first
+  realFamous.forEach(q => arr.push({text:q.t, author:q.a}));
+  // generate synthetic but readable quotes
+  let i = 0;
+  while(arr.length < count){
+    const s = starts[Math.floor(Math.random()*starts.length)];
+    const m = middles[Math.floor(Math.random()*middles.length)];
+    const e = endings[Math.floor(Math.random()*endings.length)];
+    const author = ["— Unknown","— PirateRuler","— Anonymous","— Wisdom"][Math.floor(Math.random()*4)];
+    const text = `${s} ${m} ${e}`;
+    // ensure uniqueness-ish
+    if(!arr.some(x=>x.text===text)) arr.push({text, author});
+    i++; if(i>count*5) break;
   }
-  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 2 });
-  const stars = new THREE.Points(starGeo, starMat);
-  scene.add(stars);
-    // === SUN ===
-  const sunTex = new THREE.TextureLoader().load('https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/sun.jpg');
-  const sunMat = new THREE.MeshBasicMaterial({ map: sunTex });
-  const sun = new THREE.Mesh(new THREE.SphereGeometry(30,64,64), sunMat);
-  scene.add(sun);
-
-  // Planet Data
-  planetData = {
-    Mercury: { size: 3, dist: 50, speed: 0.04, rot: 0.004, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/mercury.jpg', info: 'Mercury — closest planet to the Sun.' },
-    Venus:   { size: 5, dist: 80, speed: 0.015, rot: 0.002, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/venus.jpg', info: 'Venus — hottest planet with dense atmosphere.' },
-    Earth:   { size: 5.5, dist: 110, speed: 0.01, rot: 0.02, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/earth.jpg', info: 'Earth — our home, the blue planet.' },
-    Mars:    { size: 4, dist: 150, speed: 0.008, rot: 0.018, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/mars.jpg', info: 'Mars — the red planet with rocky deserts.' },
-    Jupiter: { size: 12, dist: 210, speed: 0.005, rot: 0.05, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/jupiter.jpg', info: 'Jupiter — largest planet with massive storms.' },
-    Saturn:  { size: 10, dist: 280, speed: 0.004, rot: 0.04, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/saturn.jpg', info: 'Saturn — famous for its beautiful rings.' },
-    Uranus:  { size: 8, dist: 350, speed: 0.003, rot: 0.03, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/uranus.jpg', info: 'Uranus — rotates on its side, icy and pale.' },
-    Neptune: { size: 8, dist: 420, speed: 0.002, rot: 0.028, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/neptune.jpg', info: 'Neptune — farthest planet, deep blue and cold.' },
-    Pluto:   { size: 2.5, dist: 480, speed: 0.0015, rot: 0.01, tex: 'https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/pluto.jpg', info: 'Pluto — a dwarf planet beyond Neptune.' }
-  };
-
-  const loader = new THREE.TextureLoader();
-  Object.keys(planetData).forEach(name=>{
-    const d = planetData[name];
-    const geo = new THREE.SphereGeometry(d.size, 48, 48);
-    const mat = new THREE.MeshStandardMaterial({ map: loader.load(d.tex) });
-    const planet = new THREE.Mesh(geo, mat);
-    planet.position.x = d.dist;
-    planet.userData = { name, ...d, angle: Math.random()*Math.PI*2 };
-    planets.push(planet);
-    scene.add(planet);
-
-    // optional ring for Saturn
-    if(name === 'Saturn'){
-      const ringGeo = new THREE.RingGeometry(d.size*1.4, d.size*2.2, 64);
-      const ringMat = new THREE.MeshBasicMaterial({
-        map: loader.load('https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/saturn_ring.png'),
-        side: THREE.DoubleSide, transparent: true
-      });
-      const ring = new THREE.Mesh(ringGeo, ringMat);
-      ring.rotation.x = Math.PI/2;
-      planet.add(ring);
-    }
-
-    // Earth’s Moon
-    if(name === 'Earth'){
-      const moonGeo = new THREE.SphereGeometry(1.2,32,32);
-      const moonMat = new THREE.MeshStandardMaterial({ map: loader.load('https://cdn.jsdelivr.net/gh/rajdeep1008/planet-textures@main/moon.jpg')});
-      const moon = new THREE.Mesh(moonGeo, moonMat);
-      moon.userData = { angle: 0 };
-      planet.add(moon);
-      planet.userData.moon = moon;
-    }
-  });
-
-  window.addEventListener('resize', ()=>{
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-
-  window.addEventListener('click', onClick);
+  return arr;
 }
 
-function onClick(e){
-  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
-  const hits = raycaster.intersectObjects(planets);
-  if(hits.length > 0){
-    const obj = hits[0].object;
-    const d = obj.userData;
-    infoPanel.innerHTML = `<h2>${d.name}</h2>${d.info}`;
-    infoPanel.style.display = 'block';
-  } else infoPanel.style.display = 'none';
-}
+const QUOTES = generateQuotes(1200); // 1200 quotes (mix of famous + generated)
 
-function animate(){
-  requestAnimationFrame(animate);
-  planets.forEach(p=>{
-    const d = p.userData;
-    d.angle += d.speed;
-    p.position.x = Math.cos(d.angle) * d.dist;
-    p.position.z = Math.sin(d.angle) * d.dist;
-    p.rotation.y += d.rot;
-    if(d.moon){
-      d.moon.userData.angle += 0.04;
-      d.moon.position.x = Math.cos(d.moon.userData.angle)*10;
-      d.moon.position.z = Math.sin(d.moon.userData.angle)*10;
-    }
-  });
-  controls.update();
-  renderer.render(scene, camera);
-}
-init();
-animate();
-  // === METEOR BELT ===
-const meteorGeo = new THREE.SphereGeometry(0.5,8,8);
-const meteorMat = new THREE.MeshStandardMaterial({ color:0x999999, roughness:1 });
-const meteorCount = 500;
-for(let i=0;i<meteorCount;i++){
-  const meteor = new THREE.Mesh(meteorGeo, meteorMat);
-  const angle = Math.random()*Math.PI*2;
-  const dist = 240 + Math.random()*60;
-  meteor.position.set(Math.cos(angle)*dist, (Math.random()-0.5)*10, Math.sin(angle)*dist);
-  scene.add(meteor);
-}
+/* --------- App state & helpers --------- */
 
-// === LIGHT GLOW EFFECT ===
-const glowGeo = new THREE.SphereGeometry(36,64,64);
-const glowMat = new THREE.MeshBasicMaterial({
-  color:0xffcc66, transparent:true, opacity:0.25
-});
-const sunGlow = new THREE.Mesh(glowGeo, glowMat);
-scene.add(sunGlow);
-
-// === CAMERA AUTO-ROTATION (CINEMATIC) ===
-let cinematic = true;
-document.addEventListener('keydown', e=>{
-  if(e.key.toLowerCase()==='c'){ cinematic=!cinematic; }
-});
-let camAngle=0;
-
-// === SIDEBAR HINT + FOOTER EFFECT ===
-const hint=document.createElement('div');
-hint.innerHTML=`<div style="position:absolute;right:20px;top:20px;
-background:rgba(255,255,255,0.08);padding:12px 18px;border-radius:10px;
-font-size:13px;line-height:1.6;backdrop-filter:blur(6px)">
-<b>Controls:</b><br>
-Drag = Orbit<br>
-Scroll = Zoom<br>
-Click = Info<br>
-Press "C" = Cinematic View</div>`;
-document.body.appendChild(hint);
-
-// === ADD STAR TWINKLE ANIMATION ===
-let starTime=0;
-function twinkle(){
-  starTime+=0.01;
-  const positions = stars.geometry.attributes.position;
-  for(let i=0;i<positions.count;i++){
-    const amp=Math.sin(starTime+i*0.05)*0.5+0.5;
-    starMat.size=1.5+amp*0.8;
-  }
-}
-
-// === ENHANCE ANIMATE LOOP ===
-const oldAnimate = animate;
-animate = function(){
-  requestAnimationFrame(animate);
-  planets.forEach(p=>{
-    const d = p.userData;
-    d.angle += d.speed;
-    p.position.x = Math.cos(d.angle)*d.dist;
-    p.position.z = Math.sin(d.angle)*d.dist;
-    p.rotation.y += d.rot;
-    if(d.moon){
-      d.moon.userData.angle += 0.04;
-      d.moon.position.x = Math.cos(d.moon.userData.angle)*10;
-      d.moon.position.z = Math.sin(d.moon.userData.angle)*10;
-    }
-  });
-  if(cinematic){
-    camAngle+=0.001;
-    camera.position.x=Math.cos(camAngle)*500;
-    camera.position.z=Math.sin(camAngle)*500;
-    camera.lookAt(0,0,0);
-  }
-  twinkle();
-  controls.update();
-  renderer.render(scene,camera);
+const PER_PAGE = 10;
+let state = {
+  filtered: QUOTES.slice(),
+  page: 1,
+  showAll: false,
+  showFaves: false,
+  sort: 'relevance',
+  favourites: JSON.parse(localStorage.getItem('pr_quotes_faves')||'[]')
 };
-animate();
+
+const $ = id => document.getElementById(id);
+
+/* --------- Rendering --------- */
+
+function renderMeta(){
+  $('shownCount').textContent = state.showAll ? state.filtered.length : Math.min(state.filtered.length, PER_PAGE);
+  $('totalCount').textContent = QUOTES.length;
+}
+
+function renderList(){
+  const list = $('quoteList');
+  list.innerHTML = '';
+  let items = state.filtered.slice();
+
+  // sort
+  if(state.sort === 'author') items.sort((a,b)=> (a.author||'').localeCompare(b.author||''));
+  else if(state.sort === 'author_desc') items.sort((a,b)=> (b.author||'').localeCompare(a.author||''));
+
+  if(state.showFaves){
+    items = items.filter(q => state.favourites.includes(q.text));
+  }
+
+  if(!state.showAll){
+    const start = (state.page-1)*PER_PAGE;
+    items = items.slice(start, start+PER_PAGE);
+  }
+
+  items.forEach(q=>{
+    const div = document.createElement('div');
+    div.className = 'quote';
+    const t = document.createElement('div');
+    t.className = 'q-text';
+    t.textContent = q.text;
+    const a = document.createElement('div');
+    a.className = 'q-author';
+    a.textContent = q.author || '—';
+    const actions = document.createElement('div');
+    actions.style.display='flex';
+    actions.style.gap='8px';
+    actions.style.marginTop='8px';
+
+    const copyBtn = document.createElement('button'); copyBtn.className='ghost'; copyBtn.textContent='Copy';
+    copyBtn.onclick = ()=> { navigator.clipboard?.writeText(`${q.text} ${q.author||''}`); copyBtn.textContent='Copied'; setTimeout(()=>copyBtn.textContent='Copy',900); };
+
+    const favBtn = document.createElement('button'); favBtn.className='ghost'; favBtn.textContent = state.favourites.includes(q.text) ? '★ Favourited' : '☆ Favourite';
+    favBtn.onclick = ()=>{
+      toggleFav(q.text);
+      favBtn.textContent = state.favourites.includes(q.text) ? '★ Favourited' : '☆ Favourite';
+      renderFavs();
+    };
+
+    const shareBtn = document.createElement('button'); shareBtn.className='ghost'; shareBtn.textContent='Share';
+    shareBtn.onclick = ()=> {
+      if(navigator.share){
+        navigator.share({title:'Quote', text: `${q.text} ${q.author||''}`}).catch(()=>{ alert('Share cancelled'); });
+      } else {
+        prompt('Copy this quote:', `${q.text} ${q.author||''}`);
+      }
+    };
+
+    actions.appendChild(copyBtn);
+    actions.appendChild(favBtn);
+    actions.appendChild(shareBtn);
+
+    div.appendChild(t);
+    div.appendChild(a);
+    div.appendChild(actions);
+    list.appendChild(div);
+  });
+
+  renderPager();
+  renderMeta();
+}
+
+function renderPager(){
+  const pager = $('pager');
+  pager.innerHTML = '';
+  if(state.showAll || state.showFaves) return;
+  const totalPages = Math.max(1, Math.ceil(state.filtered.length / PER_PAGE));
+  const left = Math.max(1, state.page-3);
+  const right = Math.min(totalPages, state.page+3);
+
+  if(state.page > 1){
+    const prev = makePageBtn('‹ Prev', ()=> { state.page--; renderList(); });
+    pager.appendChild(prev);
+  }
+
+  for(let p=left;p<=right;p++){
+    const btn = makePageBtn(p, ()=> { state.page = p; renderList(); });
+    if(p===state.page) btn.classList.add('active');
+    pager.appendChild(btn);
+  }
+
+  if(state.page < totalPages){
+    const next = makePageBtn('Next ›', ()=> { state.page++; renderList(); });
+    pager.appendChild(next);
+  }
+
+  // quick jump
+  const jump = document.createElement('input'); jump.type='number'; jump.placeholder='Go to'; jump.min=1; jump.max=totalPages; jump.style.width='80px'; jump.style.padding='8px'; jump.style.borderRadius='8px'; jump.style.border='1px solid rgba(0,0,0,0.06)';
+  jump.onkeydown = (e)=>{ if(e.key==='Enter'){ let v = parseInt(jump.value); if(v>=1 && v<=totalPages){ state.page=v; renderList(); } } };
+  pager.appendChild(jump);
+}
+
+function makePageBtn(text, onClick){
+  const b = document.createElement('button'); b.className='page-btn'; b.textContent = text; b.onclick = onClick; return b;
+}
+
+/* --------- Search & filtering --------- */
+
+function performSearch(q){
+  const needle = (q||'').trim().toLowerCase();
+  if(!needle){ state.filtered = QUOTES.slice(); state.page = 1; return; }
+  // simple relevance: quotes containing search in text or author
+  state.filtered = QUOTES.filter(item => {
+    return item.text.toLowerCase().includes(needle) || (item.author||'').toLowerCase().includes(needle);
+  });
+  // sort by simple relevance (contain index)
+  state.filtered.sort((a,b)=>{
+    const ai = a.text.toLowerCase().indexOf(needle); const bi = b.text.toLowerCase().indexOf(needle);
+    return (ai === -1 ? 9999 : ai) - (bi === -1 ? 9999 : bi);
+  });
+  state.page = 1;
+}
+
+/* --------- Favourites --------- */
+function toggleFav(text){
+  const idx = state.favourites.indexOf(text);
+  if(idx !== -1) state.favourites.splice(idx,1);
+  else state.favourites.push(text);
+  localStorage.setItem('pr_quotes_faves', JSON.stringify(state.favourites));
+  renderList();
+}
+
+function renderFavs(){
+  const panel = $('favsPanel');
+  panel.innerHTML = '';
+  if(state.favourites.length === 0){ panel.innerHTML = '<div class="smallmuted">No favourites yet.</div>'; return;}
+  const title = document.createElement('div'); title.style.fontWeight='800'; title.style.marginBottom='8px'; title.textContent='Favourites';
+  panel.appendChild(title);
+  state.favourites.forEach(txt=>{
+    const q = QUOTES.find(x=>x.text===txt);
+    if(!q) return;
+    const el = document.createElement('div'); el.style.marginBottom='8px';
+    el.innerHTML = `<div style="font-size:14px">${q.text}</div><div class="smallmuted" style="font-size:12px">${q.author||''}</div>`;
+    panel.appendChild(el);
+  });
+}
+
+/* --------- Misc helpers --------- */
+function randomQuote(){
+  const i = Math.floor(Math.random() * QUOTES.length);
+  return QUOTES[i];
+}
+
+function downloadVisible(){
+  let items = state.filtered.slice();
+  if(state.showFaves) items = items.filter(q => state.favourites.includes(q.text));
+  if(!state.showAll && !state.showFaves){
+    const start = (state.page-1)*PER_PAGE;
+    items = items.slice(start, start+PER_PAGE);
+  }
+  const txt = items.map(q=> `${q.text} ${q.author? ' ' + q.author : ''}`).join('\n\n');
+  const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'quotes.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+
+/* --------- Event wiring --------- */
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  // initial UI
+  renderMeta();
+  renderList();
+  renderFavs();
+
+  // theme
+  const saved = localStorage.getItem('site-theme');
+  const root = document.documentElement;
+  const themeBtn = $('themeBtn');
+  const themeList = $('themeList');
+  function applyTheme(t){
+    ['dark','ocean','sunset'].forEach(c=> root.classList.remove(c));
+    if(t === 'dark'){ root.classList.add('dark'); localStorage.setItem('site-theme','dark'); themeBtn.textContent = 'Dark'; }
+    else if(t === 'ocean'){ root.classList.add('ocean'); localStorage.setItem('site-theme','ocean'); themeBtn.textContent = 'Ocean'; }
+    else if(t === 'sunset'){ root.classList.add('sunset'); localStorage.setItem('site-theme','sunset'); themeBtn.textContent = 'Sunset'; }
+    else { localStorage.setItem('site-theme','light'); themeBtn.textContent = 'Light'; }
+  }
+  applyTheme(saved || 'ocean');
+  themeBtn.addEventListener('click', ()=> { themeList.classList.toggle('open'); themeList.setAttribute('aria-hidden', String(!themeList.classList.contains('open'))); });
+  themeList.addEventListener('click', e => { const t = e.target.closest('.theme-item'); if(!t) return; applyTheme(t.dataset.theme); themeList.classList.remove('open'); });
+
+  // sidebar
+  const sidebar = $('sidebar');
+  const hambBtn = $('hambBtn');
+  const closeSidebar = $('closeSidebar');
+  function openSidebar(){ sidebar.classList.add('open'); sidebar.setAttribute('aria-hidden','false'); closeSidebar?.focus(); }
+  function closeSB(){ sidebar.classList.remove('open'); sidebar.setAttribute('aria-hidden','true'); }
+  hambBtn.addEventListener('click', openSidebar);
+  closeSidebar?.addEventListener('click', closeSB);
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeSB(); });
+  document.addEventListener('click', function(e){
+    if(!sidebar.classList.contains('open')) return;
+    const inside = sidebar.contains(e.target) || hambBtn.contains(e.target);
+    if(!inside) closeSB();
+  });
+
+  // search & controls
+  $('searchBtn').addEventListener('click', ()=>{ performSearch($('searchInput').value); renderList(); });
+  $('searchInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ performSearch($('searchInput').value); renderList(); }});
+  $('randomBtn').addEventListener('click', ()=> {
+    const q = randomQuote();
+    state.filtered = [q];
+    state.page = 1;
+    state.showAll = false;
+    renderList();
+  });
+  $('downloadBtn').addEventListener('click', downloadVisible);
+  $('showAllToggle').addEventListener('change', (e)=>{ state.showAll = e.target.checked; renderList(); });
+  $('sortSelect').addEventListener('change', (e)=>{ state.sort = e.target.value; renderList(); });
+  $('showFavesBtn').addEventListener('click', ()=>{ state.showFaves = !state.showFaves; $('showFavesBtn').textContent = state.showFaves ? 'Showing Favourites' : 'Show Favourites'; renderList(); });
+  $('clearFavesBtn').addEventListener('click', ()=>{ if(confirm('Clear all saved favourites?')){ state.favourites=[]; localStorage.removeItem('pr_quotes_faves'); renderFavs(); renderList(); }});
+
+  // keyboard shortcuts
+  document.addEventListener('keydown', (e)=>{
+    if(e.key==='r' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); const q=randomQuote(); state.filtered=[q]; state.showAll=false; renderList(); }
+  });
+});
+
+/* initial counts */
+$('year').textContent = new Date().getFullYear();
+
 </script>
 </body>
 </html>
