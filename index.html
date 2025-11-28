@@ -1,19 +1,19 @@
 <!doctype html>
 <html lang="en" data-capable="pwa">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5" />
-<meta name="theme-color" content="#000000" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<title>Anime Image Gen — PirateRuler.com</title>
-<meta name="description" content="Unlimited anime images with infinite scroll and instant search. Clean, fast, no login." />
-<meta property="og:title" content="Anime Image Gen by PirateRuler.com" />
-<meta property="og:description" content="High-quality anime pictures, infinite scroll, instant search, completely free." />
-<meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg ' width='400' height='400'%3E%3Crect width='400' height='400' fill='%23000000'/%3E%3Ctext x='50%25' y='50%25' font-family='Inter' font-weight='800' font-size='200' text-anchor='middle' dominant-baseline='middle' fill='white'%3EPR%3C/text%3E%3C/svg%3E" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg ' width='64' height='64'%3E%3Crect rx='14' width='64' height='64' fill='%23000000'/%3E%3Ctext x='50%25' y='50%25' font-family='Inter,Arial,sans-serif' font-weight='800' font-size='26' text-anchor='middle' alignment-baseline='central' fill='white'%3EPR%3C/text%3E%3C/svg%3E">
-<link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkFuaW1lIEltYWdlIEdlbiIsCiAgInNob3J0X25hbWUiOiAiQW5pbWVHZW4iLAogICJzdGFydF91cmwiOiAiL2luZGV4Lmh0bWwiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmMGY0ZjgiLAogICJ0aGVtZV9jb2xvciI6ICIjMDAwMDAwIgp9">
-<style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Anime Image Gen — PirateRuler.com</title>
+  <meta name="description" content="Unlimited anime images with infinite scroll and instant search. Clean, fast, no login." />
+  <meta property="og:title" content="Anime Image Gen by PirateRuler.com" />
+  <meta property="og:description" content="High-quality anime pictures, infinite scroll, instant search, completely free." />
+  <meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg ' width='400' height='400'%3E%3Crect width='400' height='400' fill='%23000000'/%3E%3Ctext x='50%25' y='50%25' font-family='Inter' font-weight='800' font-size='200' text-anchor='middle' dominant-baseline='middle' fill='white'%3EPR%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg ' width='64' height='64'%3E%3Crect rx='14' width='64' height='64' fill='%23000000'/%3E%3Ctext x='50%25' y='50%25' font-family='Inter,Arial,sans-serif' font-weight='800' font-size='26' text-anchor='middle' alignment-baseline='central' fill='white'%3EPR%3C/text%3E%3C/svg%3E">
+  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkFuaW1lIEltYWdlIEdlbiIsCiAgInNob3J0X25hbWUiOiAiQW5pbWVHZW4iLAogICJzdGFydF91cmwiOiAiL2luZGV4Lmh0bWwiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmMGY0ZjgiLAogICJ0aGVtZV9jb2xvciI6ICIjMDAwMDAwIgp9">
+  <style>
   :root{
     --bg:#f0f4f8; --card:#ffffff; --muted:#64748b; --text:#0f172a;
     --border:#e2e8f0; --accent:#000000; --key-bg:#f1f5f9;
@@ -122,7 +122,7 @@
   #searchBox{width:100%;padding:14px;border-radius:var(--radius-md);border:1px solid var(--border);font-size:15px;background:var(--bg);color:var(--text);transition:var(--transition);box-shadow:var(--shadow-sm);}
   #searchBox:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
   .dark #searchBox:focus{box-shadow:0 0 0 3px rgba(96,165,250,0.2);}
-</style>
+  </style>
 </head>
 <body>
 <div class="container">
@@ -300,49 +300,147 @@
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  /* ---------- Gallery + Infinite Scroll Logic ---------- */
+  /* ---------- Gallery + Infinite Scroll Logic (FIXED multi-API) ---------- */
   const searchBox   = document.getElementById('searchBox');
   const gallery     = document.getElementById('gallery');
   const loader      = document.getElementById('loader');
   const endMsg      = document.getElementById('endMsg');
-  const BASE        = 'https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1';
+
   let currentPage   = 0;
   let currentTags   = 'rating:safe';
   let loading       = false;
   let endReached    = false;
 
-  // Build URL
-  function buildURL(tags, page){
-    const safe = tags.trim() ? tags.trim() + ' rating:safe' : 'rating:safe';
-    return `${BASE}&tags=${encodeURIComponent(safe)}&limit=30&pid=${page}`;
+  // API chain: gelbooru -> danbooru -> rule34
+  // gelbooru & rule34 use page parameter "pid", danbooru uses "page".
+  const API_CHAIN = [
+    { name: 'gelbooru', url: (tags, page) => `https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&tags=${encodeURIComponent(tags)}&limit=30&pid=${page}` },
+    { name: 'danbooru', url: (tags, page) => `https://danbooru.donmai.us/posts.json?tags=${encodeURIComponent(tags)}&limit=30&page=${page}` },
+    { name: 'rule34', url: (tags, page) => `https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&tags=${encodeURIComponent(tags)}&limit=30&pid=${page}` }
+  ];
+
+  // small fetch timeout wrapper
+  function fetchWithTimeout(url, opts = {}, timeout = 7000) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    return fetch(url, { signal: controller.signal, ...opts })
+      .then(res => { clearTimeout(id); return res; })
+      .catch(err => { clearTimeout(id); throw err; });
   }
 
-  // Render single card
+  // Normalize posts from different APIs into { img, tags }
+  function normalizePosts(sourceName, raw) {
+    if (!raw) return [];
+
+    try {
+      if (sourceName === 'gelbooru' || sourceName === 'rule34') {
+        // gelbooru/rule34 often return { post: [...] } or array under root sometimes
+        const posts = Array.isArray(raw) ? raw : (raw.post || raw.posts || []);
+        return posts.map(p => {
+          const img = p.file_url || p.sample_url || p.preview_url || p.jpeg_url || p.source || p.sample || p.image;
+          const tags = p.tags || p.tag_string || '';
+          return { img, tags };
+        }).filter(x => x.img);
+      }
+
+      if (sourceName === 'danbooru') {
+        // danbooru returns array of posts
+        const posts = Array.isArray(raw) ? raw : [];
+        return posts.map(p => {
+          // danbooru field names vary: file_url, large_file_url, preview_file_url, image_url
+          const img = p.file_url || p.large_file_url || p.image || p.image_url || p.preview_file_url || p.sample_url;
+          const tags = p.tag_string || p.tags || '';
+          return { img, tags };
+        }).filter(x => x.img);
+      }
+    } catch (e) {
+      return [];
+    }
+    return [];
+  }
+
+  // Pick best image URL for display (try to ensure absolute URL)
+  function makeAbsolute(url) {
+    if (!url) return null;
+    // if starts with // or http => return as-is
+    if (/^\/\/|^https?:\/\//i.test(url)) {
+      if (url.startsWith('//')) return window.location.protocol + url;
+      return url;
+    }
+    // sometimes gelbooru returns relative paths
+    if (url.startsWith('/')) {
+      // try to use origin
+      return window.location.origin + url;
+    }
+    return url;
+  }
+
+  // Render single card (safe: we escape basic single-quotes in URL)
   function renderCard(post){
-    const img  = post.file_url || post.preview_url;
-    const tags = post.tags ? post.tags.split(' ').slice(0,6).join(' ') : '';
+    const safeImg = String(post.img || '').replace(/'/g, "%27");
+    const t = (post.tags || '').split(" ").slice(0,6).join(" ");
     return `
-      <div class="pic-card" onclick="window.open('${img}','_blank')">
-        <img src="${img}" loading="lazy" alt="anime pic">
-        <div class="pic-info">${tags}</div>
+      <div class="pic-card" onclick="window.open('${safeImg}','_blank')">
+        <img src="${safeImg}" loading="lazy" alt="anime pic">
+        <div class="pic-info">${t}</div>
       </div>`;
   }
 
-  // Load & append
+  // Try each API in order to get posts; return normalized posts array or []
+  async function loadAPI(tags, page) {
+    // loop through chain
+    for (let i = 0; i < API_CHAIN.length; i++) {
+      const api = API_CHAIN[i];
+      const url = api.url(tags, page);
+      try {
+        // give danbooru CORS a chance; if blocked or 403/429, we fall back
+        const res = await fetchWithTimeout(url, { credentials: 'omit', mode: 'cors' }, 8000);
+        if (!res || !res.ok) {
+          // non-ok response -> try next
+          continue;
+        }
+        // try parse json
+        const data = await res.json();
+        const posts = normalizePosts(api.name, data);
+        // convert img fields to absolute where possible
+        const converted = posts.map(p => ({ img: makeAbsolute(p.img), tags: p.tags }));
+        // filter out invalid urls
+        const filtered = converted.filter(p => p.img && p.img.length > 5);
+        if (filtered.length > 0) return filtered;
+        // else try next API
+      } catch (err) {
+        // network error, parse error, CORS, timeout, etc -> try next
+        // silent and continue
+      }
+    }
+    return [];
+  }
+
+  // Main loader
   async function loadMore(){
-    if(loading || endReached) return;
+    if (loading || endReached) return;
     loading = true;
     loader.style.display = 'block';
-    try{
-      const res  = await fetch(buildURL(currentTags, currentPage));
-      const data = await res.json();
-      const posts= data.post || [];
-      if(!posts.length){ endReached = true; endMsg.style.display = 'block'; return; }
+
+    try {
+      const tags = currentTags.trim() ? currentTags.trim() + ' rating:safe' : 'rating:safe';
+      const posts = await loadAPI(tags, currentPage);
+      if (!posts || posts.length === 0) {
+        // no posts -> mark end reached (or try again with relaxed query once)
+        if (currentPage === 0) {
+          // if first page and no results, show friendly toast
+          showToast('No images found for that query.', '⚠️');
+        }
+        endReached = true;
+        endMsg.style.display = 'block';
+        return;
+      }
+      // append to gallery
       gallery.insertAdjacentHTML('beforeend', posts.map(renderCard).join(''));
       currentPage++;
-    }catch(e){
+    } catch (e) {
       showToast('Load failed ❌','❌');
-    }finally{
+    } finally {
       loading = false;
       loader.style.display = 'none';
     }
@@ -358,7 +456,7 @@
     loadMore();
   }
 
-  // Infinite scroll
+  // Infinite scroll using IntersectionObserver
   const io = new IntersectionObserver((entries)=>{
     if(entries[0].isIntersecting && !loading && !endReached) loadMore();
   }, {threshold:0.1});
@@ -373,6 +471,7 @@
 
   // Initial load
   resetSearch();
+
 </script>
 </body>
 </html>
